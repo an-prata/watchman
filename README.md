@@ -14,8 +14,8 @@ Usage of ./watchman:
     	The command to run on file change events
   -file string
     	The file to watch for changes
-  -split-and
-    	Splits command string by the "and" operator ("&&"), using each new string as a command. Successive commands will only run upon the previous's success
+  -ms-gap int
+    	Adds a minimum gap between events, any events received less than this many milliseconds after the previous event will be ignored. Useful if writes are infrequent but duplicate from some programs.
   -split-then
     	Splits command string by the "then" operator (";"), using each new string as a command. Successive commands will run regardless the previous's success
 ```
