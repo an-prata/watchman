@@ -7,15 +7,30 @@ package main
 import (
 	"log"
 	"os/exec"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
 
-func HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
+type EventHandler struct {
+	lastHandled time.Time
+	minimumGap  time.Duration
+}
+
+func NewEventHandler(minimumGap time.Duration) EventHandler {
+	return EventHandler{time.Now(), minimumGap}
+}
+
+func (eh *EventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
 	if !event.Has(fsnotify.Write) {
 		return
 	}
 
+	if time.Now().Sub(eh.lastHandled) < eh.minimumGap {
+		return
+	}
+
+	eh.lastHandled = time.Now()
 	log.Println("Got file write event: calling command ...")
 
 	for _, c := range commands {

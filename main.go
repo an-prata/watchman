@@ -6,6 +6,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -31,6 +32,8 @@ func main() {
 		log.Fatal("Could not add file for watching:", err.Error())
 	}
 
+	handler := NewEventHandler(time.Millisecond * time.Duration(args.msGap))
+
 	for {
 		select {
 		case event, ok := <-watcher.Events:
@@ -39,7 +42,7 @@ func main() {
 			}
 
 			commands := MakeCommands(argvs)
-			HandleEvent(event, commands)
+			handler.HandleEvent(event, commands)
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
