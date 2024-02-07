@@ -6,8 +6,47 @@ package main
 
 import (
 	"errors"
+	"log"
+	"os"
+	"os/exec"
 	"strings"
 )
+
+// Creates an array of argv arrays for calling commands as specified by the
+// given `Args` struct.
+func ParseCommandFromArgs(args *Args) ([]*exec.Cmd, error) {
+	var callbackArgv []string
+
+	if args.splitThen {
+		callbackArgv = SeparateThen(*args.command)
+	} else if args.splitAnd {
+		callbackArgv = SeparateAnd(*args.command)
+	} else {
+		callbackArgv = []string{*args.command}
+	}
+
+	for _, cmd := range callbackArgv {
+		log.Println("watchman will call:", cmd)
+	}
+
+	enviornment := os.Environ()
+	commands := []*exec.Cmd{}
+
+	for _, command := range callbackArgv {
+		args, err := ArgSplit(command)
+
+		if err != nil {
+			return nil, err
+		}
+
+		cmd := exec.Command(args[0], args[1:]...)
+		cmd.Env = enviornment
+
+		commands = append(commands, cmd)
+	}
+
+	return commands, nil
+}
 
 // Separates the argstring into a slice or strings by the "and" operator ('&&').
 func SeparateAnd(argstr string) []string {
