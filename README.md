@@ -1,6 +1,6 @@
 # Watchman
 
-A simple program for running commands on file write events. I'm using this to reload my `wpaperd` config right now, which can be done like so:
+A simple program for running commands on file write events, its super small and lightweight. I'm using this to reload my `wpaperd` config right now, which can be done like so:
 
 ```fish
 ./watchman -file ~/.config/wpaperd/wallpaper.toml -command 'killall wpaperd; wpaperd' -split-then
