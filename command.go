@@ -7,7 +7,6 @@ package main
 import (
 	"log"
 	"os/exec"
-	"strings"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -21,20 +20,20 @@ func HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
 
 	for _, c := range commands {
 		go runCommand(c)
+		log.Println("Started")
 	}
 
 }
 
 func runCommand(command *exec.Cmd) {
-	out, err := command.Output()
+
+	// Not capturing output is deliberate, to clean it up and output it would add
+	// about 2MB extra memory usage to the program in my tests. May consider making
+	// output capture a flag for debugging configurations.
+
+	err := command.Run()
 
 	if err != nil {
 		log.Println("Failed to run callback:", err.Error())
-	}
-
-	outputLines := strings.Split(string(out), "\n")
-
-	for _, line := range outputLines {
-		log.Println("[Command Ouput]:", line)
 	}
 }

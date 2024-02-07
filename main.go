@@ -12,7 +12,7 @@ import (
 
 func main() {
 	args := GetArgs()
-	commands, err := ParseCommandFromArgs(&args)
+	argvs, err := ParseArgvs(&args)
 
 	if err != nil {
 		log.Fatal("Could not parse callback arguments:", err.Error())
@@ -38,6 +38,7 @@ func main() {
 				log.Fatal("Channel was not ok")
 			}
 
+			commands := MakeCommands(argvs)
 			HandleEvent(event, commands)
 
 		case err, ok := <-watcher.Errors:

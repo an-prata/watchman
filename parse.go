@@ -12,9 +12,22 @@ import (
 	"strings"
 )
 
+func MakeCommands(argvs [][]string) []*exec.Cmd {
+	commands := []*exec.Cmd{}
+
+	for _, command := range argvs {
+		cmd := exec.Command(command[0], command[1:]...)
+		cmd.Env = os.Environ()
+
+		commands = append(commands, cmd)
+	}
+
+	return commands
+}
+
 // Creates an array of argv arrays for calling commands as specified by the
 // given `Args` struct.
-func ParseCommandFromArgs(args *Args) ([]*exec.Cmd, error) {
+func ParseArgvs(args *Args) ([][]string, error) {
 	var callbackArgv []string
 
 	if args.splitThen {
@@ -27,20 +40,16 @@ func ParseCommandFromArgs(args *Args) ([]*exec.Cmd, error) {
 		log.Println("watchman will call:", cmd)
 	}
 
-	enviornment := os.Environ()
-	commands := []*exec.Cmd{}
+	commands := make([][]string, len(callbackArgv))
 
-	for _, command := range callbackArgv {
+	for i, command := range callbackArgv {
 		args, err := ArgSplit(command)
 
 		if err != nil {
 			return nil, err
 		}
 
-		cmd := exec.Command(args[0], args[1:]...)
-		cmd.Env = enviornment
-
-		commands = append(commands, cmd)
+		commands[i] = args
 	}
 
 	return commands, nil
