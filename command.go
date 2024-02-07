@@ -7,11 +7,12 @@ package main
 import (
 	"log"
 	"os/exec"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 )
 
-func HandleEvent(event fsnotify.Event, commands []*exec.Cmd, abortOnErr bool) {
+func HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
 	if !event.Has(fsnotify.Write) {
 		return
 	}
@@ -19,15 +20,21 @@ func HandleEvent(event fsnotify.Event, commands []*exec.Cmd, abortOnErr bool) {
 	log.Println("Got file write event: calling command ...")
 
 	for _, c := range commands {
-		err := c.Run()
-
-		if err != nil {
-			log.Println("Failed to run callback:", err.Error())
-
-			if abortOnErr {
-				break
-			}
-		}
+		go runCommand(c)
 	}
 
+}
+
+func runCommand(command *exec.Cmd) {
+	out, err := command.Output()
+
+	if err != nil {
+		log.Println("Failed to run callback:", err.Error())
+	}
+
+	outputLines := strings.Split(string(out), "\n")
+
+	for _, line := range outputLines {
+		log.Println("[Command Ouput]:", line)
+	}
 }

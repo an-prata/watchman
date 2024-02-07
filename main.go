@@ -38,7 +38,7 @@ func main() {
 				log.Fatal("Channel was not ok")
 			}
 
-			HandleEvent(event, commands, args.splitAnd)
+			HandleEvent(event, commands)
 
 		case err, ok := <-watcher.Errors:
 			if !ok {

@@ -19,8 +19,6 @@ func ParseCommandFromArgs(args *Args) ([]*exec.Cmd, error) {
 
 	if args.splitThen {
 		callbackArgv = SeparateThen(*args.command)
-	} else if args.splitAnd {
-		callbackArgv = SeparateAnd(*args.command)
 	} else {
 		callbackArgv = []string{*args.command}
 	}
