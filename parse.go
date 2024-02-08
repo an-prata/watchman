@@ -9,17 +9,32 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
-func MakeCommands(argvs [][]string) []*exec.Cmd {
-	commands := []*exec.Cmd{}
+func MakeCommandsBuf(argvs [][]string, buf []*exec.Cmd) {
+	// Checking length before hand is unecessary, as `slices.Grow` is a noop is no
+	// growth is needed for `n` elements.
 
-	for _, command := range argvs {
+	slices.Grow[[]*exec.Cmd](buf, len(argvs))
+
+	for i, command := range argvs {
 		cmd := exec.Command(command[0], command[1:]...)
 		cmd.Env = os.Environ()
 
-		commands = append(commands, cmd)
+		buf[i] = cmd
+	}
+}
+
+func MakeCommands(argvs [][]string) []*exec.Cmd {
+	commands := make([]*exec.Cmd, len(argvs))
+
+	for i, command := range argvs {
+		cmd := exec.Command(command[0], command[1:]...)
+		cmd.Env = os.Environ()
+
+		commands[i] = cmd
 	}
 
 	return commands
