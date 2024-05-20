@@ -13,6 +13,7 @@ type Args struct {
 	file      *string
 	command   *string
 	splitThen bool
+	sync      bool
 	msGap     int64
 }
 
@@ -20,6 +21,7 @@ func GetArgs() Args {
 	filePath := flag.String("file", "", "The file to watch for changes")
 	callback := flag.String("command", "", "The command to run on file change events")
 	splitThen := flag.Bool("split-then", false, "Splits command string by the \"then\" operator (\";\"), using each new string as a command. Successive commands will run regardless the previous's success")
+	sync := flag.Bool("sync", false, "Runs commands one after the other, blocking further execution until all commands except the last has completed. This will not block watchman on the last command, meaning that it may a process not meant to exit.")
 	millisecondGap := flag.Int64("ms-gap", 0, "Adds a minimum gap between events, any events received less than this many milliseconds after the previous event will be ignored. Useful if writes are infrequent but duplicate from some programs.")
 
 	flag.Parse()
@@ -32,5 +34,5 @@ func GetArgs() Args {
 		log.Fatal("Please give a command to call on file change events")
 	}
 
-	return Args{filePath, callback, *splitThen, *millisecondGap}
+	return Args{filePath, callback, *splitThen, *sync, *millisecondGap}
 }

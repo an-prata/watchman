@@ -34,7 +34,13 @@ func main() {
 	}
 
 	cmdbuf := make([]*exec.Cmd, len(argvs))
-	handler := NewEventHandler(time.Millisecond * time.Duration(args.msGap))
+	var handler EventHandler
+
+	if args.sync {
+		handler = NewSyncEventHandler(time.Millisecond * time.Duration(args.msGap))
+	} else {
+		handler = NewAsyncEventHandler(time.Millisecond * time.Duration(args.msGap))
+	}
 
 	for {
 		select {
@@ -54,4 +60,8 @@ func main() {
 			log.Println("Got error:", err)
 		}
 	}
+}
+
+type EventHandler interface {
+	HandleEvent(fsnotify.Event, []*exec.Cmd)
 }

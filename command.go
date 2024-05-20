@@ -12,21 +12,17 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-type EventHandler struct {
+type AsyncEventHandler struct {
 	lastHandled time.Time
 	minimumGap  time.Duration
 }
 
-func NewEventHandler(minimumGap time.Duration) EventHandler {
-	return EventHandler{time.Now(), minimumGap}
+func NewAsyncEventHandler(minimumGap time.Duration) AsyncEventHandler {
+	return AsyncEventHandler{time.Now(), minimumGap}
 }
 
-func (eh *EventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
-	if !event.Has(fsnotify.Write) {
-		return
-	}
-
-	if time.Now().Sub(eh.lastHandled) < eh.minimumGap {
+func (eh AsyncEventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
+	if !event.Has(fsnotify.Write) || time.Now().Sub(eh.lastHandled) < eh.minimumGap {
 		return
 	}
 
@@ -35,9 +31,36 @@ func (eh *EventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) 
 
 	for _, c := range commands {
 		go runCommand(c)
-		log.Println("Started")
+		log.Println("Started -", c.String())
+	}
+}
+
+type SyncEventHandler struct {
+	lastHandled time.Time
+	minimumGap  time.Duration
+}
+
+func NewSyncEventHandler(minimumGap time.Duration) SyncEventHandler {
+	return SyncEventHandler{time.Now(), minimumGap}
+}
+
+func (eh SyncEventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
+	if !event.Has(fsnotify.Write) || time.Now().Sub(eh.lastHandled) < eh.minimumGap {
+		return
 	}
 
+	eh.lastHandled = time.Now()
+	log.Println("Got file write event: calling command ...")
+
+	for i, c := range commands {
+		if i == len(commands)-1 {
+			go runCommand(c)
+		} else {
+			runCommand(c)
+		}
+
+		log.Println("Started -", c.String())
+	}
 }
 
 func runCommand(command *exec.Cmd) {
@@ -49,6 +72,6 @@ func runCommand(command *exec.Cmd) {
 	err := command.Run()
 
 	if err != nil {
-		log.Println("Failed to run callback:", err.Error())
+		log.Println("Failed to run callback -", command.String(), ":", err.Error())
 	}
 }
