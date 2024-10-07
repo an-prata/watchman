@@ -36,6 +36,11 @@ func main() {
 	cmdbuf := make([]*exec.Cmd, len(argvs))
 	handler := NewEventHandler(time.Millisecond*time.Duration(args.msGap), args.sync)
 
+	if args.start {
+		MakeCommandsBuf(argvs, cmdbuf)
+		handler.RunCommands(cmdbuf)
+	}
+
 	for {
 		select {
 		case event, ok := <-watcher.Events:

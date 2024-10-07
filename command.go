@@ -34,7 +34,10 @@ func (eh EventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
 
 	eh.lastHandled = time.Now()
 	log.Println("Got file write event: calling command ...")
+	eh.RunCommands(commands)
+}
 
+func (eh EventHandler) RunCommands(commands []*exec.Cmd) {
 	for i, c := range commands {
 		errChan := runCommand(c)
 		log.Println("Started -", c.String())
@@ -45,7 +48,6 @@ func (eh EventHandler) HandleEvent(event fsnotify.Event, commands []*exec.Cmd) {
 		if eh.syncronous && i != len(commands)-1 {
 			<-errChan
 		}
-
 	}
 }
 
